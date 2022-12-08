@@ -1,8 +1,8 @@
-﻿using Harmony;
+﻿using CitiesHarmony.API;
+using HarmonyLib;
 using ICities;
 using System;
 using System.IO;
-using System.Reflection;
 using UnityEngine;
 
 namespace VehicleUnbuncher
@@ -39,6 +39,30 @@ namespace VehicleUnbuncher
         }
     }
 
+    public static class Patcher
+    {
+        private const string HarmonyId = "Overhatted.VehicleUnbuncher";
+        private static bool patched = false;
+
+        public static void PatchAll()
+        {
+            if (patched) return;
+
+            patched = true;
+            var harmony = new Harmony(HarmonyId);
+            harmony.PatchAll(typeof(Patcher).Assembly);
+        }
+
+        public static void UnpatchAll()
+        {
+            if (!patched) return;
+
+            var harmony = new Harmony(HarmonyId);
+            harmony.UnpatchAll(HarmonyId);
+            patched = false;
+        }
+    }
+
     public class Loader : LoadingExtensionBase
     {
         public override void OnCreated(ILoading loading)
@@ -48,8 +72,7 @@ namespace VehicleUnbuncher
 #endif
             VehicleUnbuncherManager.Init();
 
-            var harmony = HarmonyInstance.Create("com.overhatted.vehicleunbuncher");
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
+            if (HarmonyHelper.IsHarmonyInstalled) Patcher.PatchAll();
 
             Options.Load();
             Options.Save();
@@ -57,7 +80,7 @@ namespace VehicleUnbuncher
 
         public override void OnReleased()
         {
-
+            if (HarmonyHelper.IsHarmonyInstalled) Patcher.UnpatchAll();
         }
 
         public override void OnLevelLoaded(LoadMode mode)
