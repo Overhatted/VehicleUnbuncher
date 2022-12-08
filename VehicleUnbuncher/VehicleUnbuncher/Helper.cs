@@ -70,8 +70,6 @@ namespace VehicleUnbuncher
 #if DEBUG
             Helper.PrintError("");
 #endif
-            VehicleUnbuncherManager.Init();
-
             if (HarmonyHelper.IsHarmonyInstalled) Patcher.PatchAll();
 
             Options.Load();
